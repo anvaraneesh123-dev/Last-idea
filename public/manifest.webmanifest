@@ -1,0 +1,38 @@
+{
+  "name": "Nexus – CommunityOS",
+  "short_name": "NexusOS",
+  "description": "The Operating System for Every Community. Offline-First Resource & Disaster Management Platform.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0F19",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' fill='%230ea5e9'><rect width='192' height='192' rx='40' fill='%230B0F19'/><circle cx='96' cy='96' r='60' stroke='%230ea5e9' stroke-width='12' fill='none'/><circle cx='96' cy='96' r='24' fill='%2314b8a6'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%230ea5e9'><rect width='512' height='512' rx='100' fill='%230B0F19'/><circle cx='256' cy='256' r='160' stroke='%230ea5e9' stroke-width='32' fill='none'/><circle cx='256' cy='256' r='64' fill='%2314b8a6'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["utilities", "social", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Emergency Operations",
+      "short_name": "Emergency",
+      "url": "/emergency",
+      "description": "Open Emergency Operations Center"
+    },
+    {
+      "name": "Community Map",
+      "short_name": "Map",
+      "url": "/map",
+      "description": "View Interactive Resource GIS Map"
+    }
+  ]
+}
