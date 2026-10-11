@@ -84,14 +84,14 @@ export const ResourcesPage: React.FC<ResourcesPageProps> = ({ onOpenAddResource 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight">
               Community Resource Directory
             </h1>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-500/20">
               {resources.length} registered
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 mt-1">
             Discover, lend, and borrow shared equipment across {currentCommunity.name}. Zero rental fees, neighbor-powered.
           </p>
         </div>
@@ -99,7 +99,7 @@ export const ResourcesPage: React.FC<ResourcesPageProps> = ({ onOpenAddResource 
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenAddResource}
-            className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-md shadow-teal-600/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>List an Item</span>

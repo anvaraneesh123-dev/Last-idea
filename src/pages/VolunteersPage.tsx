@@ -33,15 +33,15 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
 
   const skillsList = [
     'all',
-    'Triage',
-    'Emergency Medicine',
-    'Master Electrician',
-    'Chainsaw Operations',
-    'Ham Radio Operator',
-    'Senior Care',
-    'Flood Defense',
-    'First Aid',
-    'Disaster Logistics',
+    'Emergency Triage',
+    'Paramedic Medicine',
+    'Structural Assessment',
+    'Commercial Kitchen Operations',
+    'Solar Microinverters',
+    'Geriatric Care',
+    'Ham Radio Net Control',
+    'Gravity Filtration',
+    'Class A CDL Driving',
   ];
 
   const filteredVolunteers = volunteers.filter(v => {
@@ -71,19 +71,19 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight">
               Community Volunteer Network
             </h1>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-500/20">
               {volunteers.length} Active Corps
             </span>
             {isAdmin && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-500/20">
                 Admin Mode: Verification Controls Active
               </span>
             )}
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 mt-1">
             Certified first responders, master tradespeople, and mutual aid squad leaders in {currentCommunity.name}.
           </p>
         </div>
@@ -91,7 +91,7 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenNewMission}
-            className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-md shadow-teal-600/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer w-fit"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer w-fit"
           >
             <Plus className="w-4 h-4" />
             <span>Dispatch Squad Mission</span>
@@ -102,42 +102,42 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
       {/* Community Impact Summary Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="glass-card rounded-2xl p-4 border flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
+          <div className="p-3 rounded-xl bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300">
             <Clock className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">
+            <div className="text-2xl font-black text-stone-900 dark:text-white">
               {totalHours.toLocaleString()} hrs
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <div className="text-xs text-stone-500 dark:text-stone-400 font-medium">
               Mutual Aid Contributed
             </div>
           </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+          <div className="p-3 rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400">
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">
+            <div className="text-2xl font-black text-stone-900 dark:text-white">
               {totalMissionsCompleted}
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <div className="text-xs text-stone-500 dark:text-stone-400 font-medium">
               Completed Relief Operations
             </div>
           </div>
         </div>
 
         <div className="glass-card rounded-2xl p-4 border flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">
+            <div className="text-2xl font-black text-stone-900 dark:text-white">
               {verifiedCount} / {volunteers.length}
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <div className="text-xs text-stone-500 dark:text-stone-400 font-medium">
               Admin Verified Credentials
             </div>
           </div>
@@ -145,13 +145,13 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+      <div className="flex items-center gap-2 border-b border-stone-200 dark:border-stone-800 pb-3">
         <button
           onClick={() => setActiveTab('volunteers')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'volunteers'
-              ? 'bg-teal-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
         >
           <Users2 className="w-4 h-4" />
@@ -162,8 +162,8 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
           onClick={() => setActiveTab('missions')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'missions'
-              ? 'bg-teal-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
           }`}
         >
           <HeartHandshake className="w-4 h-4" />
@@ -174,16 +174,16 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
       {activeTab === 'volunteers' ? (
         <div className="space-y-4">
           {/* Volunteer Search and Skill Pills */}
-          <div className="p-4 rounded-2xl glass-card border border-slate-200/80 dark:border-slate-800/80 flex flex-col md:flex-row items-center gap-3">
+          <div className="p-4 rounded-2xl glass-card border border-stone-200/80 dark:border-stone-800/80 flex flex-col md:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
               <input
                 type="text"
                 placeholder="Search volunteers by name, capability, or neighborhood zone..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-stone-100 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
+              <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5 pointer-events-none" />
             </div>
 
             <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
@@ -193,8 +193,8 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
                   onClick={() => setSelectedSkill(skill)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap cursor-pointer transition-colors ${
                     selectedSkill === skill
-                      ? 'bg-teal-600 text-white font-bold'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      ? 'bg-emerald-600 text-white font-bold'
+                      : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
                   }`}
                 >
                   {skill === 'all' ? 'All Skills' : skill}

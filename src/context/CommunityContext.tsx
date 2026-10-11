@@ -286,7 +286,7 @@ export const CommunityProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('nexus_theme');
     if (saved) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return false; // Default to clean white & organic green/brown/red/blue theme
   });
 
   // Dynamic live states loaded from dataService / IndexedDB

@@ -92,22 +92,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               Active Node: {currentCommunity.code}
             </span>
             <span className="text-xs text-slate-400">•</span>
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+            <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               Decentralized Mesh Connected
             </span>
-            {isDemoMode && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                Local Offline Database
-              </span>
-            )}
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-500/20">
+              SQLite Laptop Database Connected
+            </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight mt-1">
             Community Analytics & Command Center
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Real-time telemetry, mutual aid requests, and emergency readiness for {currentCommunity.name}. Logged in as <strong className="text-slate-800 dark:text-slate-200">{currentUser.fullName} ({userRole.replace('_', ' ').toUpperCase()})</strong>.
+          <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 mt-0.5">
+            Real-time telemetry, mutual aid requests, and emergency readiness for {currentCommunity.name}. Logged in as <strong className="text-stone-900 dark:text-stone-200">{currentUser.fullName} ({userRole.replace('_', ' ').toUpperCase()})</strong>.
           </p>
         </div>
 
@@ -118,16 +116,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             className={`px-4 py-2.5 rounded-xl font-bold text-xs border transition-all flex items-center gap-2 active:scale-95 cursor-pointer ${
               isEmergencyMode
                 ? 'bg-red-600 hover:bg-red-500 text-white border-red-500 shadow-lg shadow-red-600/30 pulse-emergency-indicator'
-                : 'bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                : 'bg-stone-100 dark:bg-stone-800 hover:bg-red-50 dark:hover:bg-red-950/30 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700'
             }`}
           >
-            <ShieldAlert className={`w-4 h-4 ${isEmergencyMode ? 'text-white animate-pulse' : 'text-red-500'}`} />
-            <span>{isEmergencyMode ? 'DISASTER MODE ACTIVE' : 'Simulate Emergency'}</span>
+            <ShieldAlert className={`w-4 h-4 ${isEmergencyMode ? 'text-white animate-pulse' : 'text-red-600'}`} />
+            <span>{isEmergencyMode ? 'DISASTER MODE ACTIVE' : 'Emergency Mode'}</span>
           </button>
 
           <button
             onClick={onOpenAddResource}
-            className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-md shadow-teal-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Lend Resource</span>

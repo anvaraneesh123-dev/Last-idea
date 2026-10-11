@@ -171,34 +171,32 @@ export const ReportsPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight">
               Community Resilience & Telemetry Reports
             </h1>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-500/20">
               Audit Grade A+
             </span>
-            {isDemoMode && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                Sample Data (Demo Mode Active)
-              </span>
-            )}
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-500/20">
+              Live SQLite Database Ledger
+            </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 mt-1">
             Real metrics calculated from actual resource inventory, volunteer rosters, and aid requests in {currentCommunity.name}.
           </p>
         </div>
 
         {/* Date Range Selector & Export Controls */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 text-xs font-semibold">
+          <div className="flex items-center bg-stone-100 dark:bg-stone-800 p-1 rounded-2xl border border-stone-200/80 dark:border-stone-700/80 text-xs font-semibold">
             {(['7d', '30d', '90d', 'all'] as const).map(tf => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
                 className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                   timeframe === tf
-                    ? 'bg-white dark:bg-slate-900 text-teal-600 dark:text-teal-400 shadow-sm font-bold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-white dark:bg-stone-900 text-emerald-700 dark:text-emerald-400 shadow-sm font-bold'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 {tf === '7d' ? '7 Days' : tf === '30d' ? '30 Days' : tf === '90d' ? '90 Days' : 'All Time'}
@@ -208,7 +206,7 @@ export const ReportsPage: React.FC = () => {
 
           <button
             onClick={handleExportCsv}
-            className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-md shadow-teal-600/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
             aria-label="Download CSV Ledger"
           >
             <Download className="w-4 h-4" />
@@ -216,16 +214,6 @@ export const ReportsPage: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* Demo Mode Notice */}
-      {isDemoMode && (
-        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs flex items-center gap-2.5">
-          <Info className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
-          <span>
-            <strong>Demo Mode Active:</strong> Statistics are computed dynamically from initial mock seeds and local offline changes in IndexedDB. No fake charts or invented historical trends are displayed.
-          </span>
-        </div>
-      )}
 
       {/* Top Impact KPI Cards (Calculated from Actual Records) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -8,7 +8,7 @@ interface MetricCardProps {
   changeType?: 'positive' | 'negative' | 'neutral';
   icon: LucideIcon;
   subtext?: string;
-  colorScheme?: 'teal' | 'blue' | 'rose' | 'amber';
+  colorScheme?: 'green' | 'brown' | 'red' | 'blue' | 'teal' | 'rose' | 'amber';
 }
 
 export const MetricCard: React.FC<MetricCardProps> = ({
@@ -18,39 +18,54 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   changeType = 'positive',
   icon: Icon,
   subtext,
-  colorScheme = 'teal',
+  colorScheme = 'green',
 }) => {
   const colorMap = {
+    green: {
+      border: 'hover:border-emerald-600/50',
+      iconBg: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
+      glow: 'from-emerald-600/10',
+    },
     teal: {
-      border: 'hover:border-teal-500/40',
-      iconBg: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',
-      glow: 'from-teal-500/5',
+      border: 'hover:border-emerald-600/50',
+      iconBg: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
+      glow: 'from-emerald-600/10',
     },
-    blue: {
-      border: 'hover:border-blue-500/40',
-      iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-      glow: 'from-blue-500/5',
-    },
-    rose: {
-      border: 'hover:border-rose-500/40',
-      iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
-      glow: 'from-rose-500/5',
+    brown: {
+      border: 'hover:border-amber-800/50',
+      iconBg: 'bg-amber-100/70 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300',
+      glow: 'from-amber-800/10',
     },
     amber: {
-      border: 'hover:border-amber-500/40',
-      iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-      glow: 'from-amber-500/5',
+      border: 'hover:border-amber-800/50',
+      iconBg: 'bg-amber-100/70 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300',
+      glow: 'from-amber-800/10',
+    },
+    red: {
+      border: 'hover:border-red-600/50',
+      iconBg: 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400',
+      glow: 'from-red-600/10',
+    },
+    rose: {
+      border: 'hover:border-red-600/50',
+      iconBg: 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400',
+      glow: 'from-red-600/10',
+    },
+    blue: {
+      border: 'hover:border-blue-600/50',
+      iconBg: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400',
+      glow: 'from-blue-600/10',
     },
   };
 
-  const scheme = colorMap[colorScheme];
+  const scheme = colorMap[colorScheme] || colorMap.green;
 
   return (
     <div className={`glass-card relative overflow-hidden rounded-2xl p-5 border transition-all duration-200 hover:shadow-lg ${scheme.border}`}>
       <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${scheme.glow} to-transparent rounded-bl-full pointer-events-none`} />
 
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider">
           {title}
         </span>
         <div className={`p-2.5 rounded-xl ${scheme.iconBg}`}>
@@ -58,25 +73,28 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         </div>
       </div>
 
-      <div className="mt-3 flex items-baseline gap-2">
-        <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+      <div className="mt-4 flex items-baseline gap-2">
+        <span className="text-2xl sm:text-3xl font-extrabold text-stone-900 dark:text-white tracking-tight">
           {value}
         </span>
+
         {change && (
-          <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${
-            changeType === 'positive'
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-              : changeType === 'negative'
-              ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-              : 'bg-slate-500/10 text-slate-600 dark:text-slate-400'
-          }`}>
+          <span
+            className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+              changeType === 'positive'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-500/20'
+                : changeType === 'negative'
+                ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 border border-red-500/20'
+                : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300'
+            }`}
+          >
             {change}
           </span>
         )}
       </div>
 
       {subtext && (
-        <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+        <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
           {subtext}
         </p>
       )}

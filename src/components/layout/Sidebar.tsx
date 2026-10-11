@@ -121,22 +121,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Current Community Card */}
-          <div className="rounded-2xl p-3.5 bg-gradient-to-br from-teal-500/10 via-cyan-500/5 to-blue-500/10 border border-teal-500/20 text-slate-800 dark:text-slate-200 shadow-sm">
+          <div className="rounded-2xl p-3.5 bg-gradient-to-br from-emerald-500/10 via-amber-800/10 to-blue-600/10 border border-emerald-600/20 text-stone-800 dark:text-stone-200 shadow-sm">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-bold tracking-wider uppercase text-teal-600 dark:text-teal-400">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-emerald-700 dark:text-emerald-400">
                 ACTIVE DOMAIN
               </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-teal-500/15 text-teal-700 dark:text-teal-300">
+              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-600/15 text-emerald-800 dark:text-emerald-300">
                 {currentCommunity.code}
               </span>
             </div>
-            <div className="font-bold text-xs text-slate-900 dark:text-white truncate">
+            <div className="font-bold text-xs text-stone-900 dark:text-white truncate">
               {currentCommunity.name}
             </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center justify-between">
+            <div className="text-[11px] text-stone-600 dark:text-stone-400 mt-0.5 flex items-center justify-between">
               <span>Pop: {currentCommunity.population.toLocaleString()}</span>
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                <ShieldCheck className="w-3 h-3" />
+              <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5" />
                 {currentCommunity.emergencyReadinessScore}% Ready
               </span>
             </div>
@@ -144,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           {/* Navigation Links */}
           <nav className="space-y-1">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 pb-2">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-amber-900/60 dark:text-amber-200/60 px-3 pb-2">
               Platform Modules
             </div>
 
@@ -159,10 +159,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     isActive
                       ? item.highlight
                         ? 'bg-red-600 text-white shadow-md shadow-red-600/30 font-bold'
-                        : 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-500/20 font-bold'
+                        : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-600/25 font-bold shadow-sm'
                       : item.highlight
                       ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
+                      : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/60 hover:text-stone-900 dark:hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 truncate">
