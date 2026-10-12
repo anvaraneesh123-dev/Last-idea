@@ -5,6 +5,7 @@ import { localSqlitePlugin } from './database/sqliteApiPlugin.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [
     react(),
     tailwindcss(),
