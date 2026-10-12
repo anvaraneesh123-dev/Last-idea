@@ -308,6 +308,13 @@ The platform includes an automated end-to-end test runner in the **Offline Opera
 
 ## 10. Production Deployment
 
+### GitHub Repository & GitHub Pages
+- **Repository URL:** [https://github.com/anvaraneesh123-dev/Last-idea](https://github.com/anvaraneesh123-dev/Last-idea)
+- **Automated Workflow:** Configured in `.github/workflows/deploy.yml` to automatically build and deploy the production bundle to GitHub Pages whenever changes are pushed to `main`.
+- **To Enable GitHub Pages:**
+  1. Open [Repository Settings -> Pages](https://github.com/anvaraneesh123-dev/Last-idea/settings/pages).
+  2. Under **Build and deployment > Source**, select **GitHub Actions**.
+
 ### Deploying to Vercel
 1. Ensure `vercel.json` is in the project root (configured with SPA rewrites and PWA cache headers).
 2. Connect your Git repository to Vercel or deploy via CLI:
