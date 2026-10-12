@@ -16,6 +16,7 @@ import {
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { offlineDb } from './indexedDb';
 import { matchRequestToResources } from '../utils/matchingEngine';
+import { crossDeviceSync } from './crossDeviceSync';
 
 // Seed Notifications with Strict User Isolation and Deduplication Keys
 export const INITIAL_SEED_NOTIFICATIONS: AppNotification[] = [
@@ -1082,6 +1083,21 @@ export class DataService {
       volunteers = await offlineDb.getAll<VolunteerProfile>('volunteer_profiles');
     }
 
+    // 2. Multi-Device Cloud Relay: Fetch any volunteers registered from other devices
+    try {
+      const remoteVolunteers = await crossDeviceSync.fetchRemoteVolunteers();
+      if (remoteVolunteers.length > 0) {
+        for (const rv of remoteVolunteers) {
+          if (!volunteers.some(v => v.id === rv.id || (v.name === rv.name && v.phone === rv.phone))) {
+            volunteers.unshift(rv);
+            await offlineDb.put('volunteer_profiles', rv);
+          }
+        }
+      }
+    } catch {
+      // Cloud relay unreachable (offline mode)
+    }
+
     // PRIVACY PROTECTION: Protect personal contact information and exact home address
     // Only administrators and the volunteer themselves can see unmasked phone and full address
     return volunteers.map(v => {
@@ -1095,6 +1111,24 @@ export class DataService {
         phone: v.phone ? v.phone.replace(/(\+\d{1,2}\s\(\d{3}\)\s)\d{3}-(\d{4})/, '$1***-$2') : '+1 (555) ***-****',
       };
     });
+  }
+
+  async registerVolunteer(volunteer: VolunteerProfile): Promise<VolunteerProfile> {
+    await this.initialize();
+    await offlineDb.put('volunteer_profiles', volunteer);
+
+    // Multi-device sync: broadcast to local SQLite & cloud pub/sub relay
+    await crossDeviceSync.publishVolunteer(volunteer);
+
+    await this.logActivity({
+      title: `Volunteer Registered: ${volunteer.name}`,
+      description: `${volunteer.role} registered in ${volunteer.neighborhoodZone}.`,
+      type: 'volunteer',
+      actor: volunteer.name,
+      badge: 'New Responder',
+    });
+
+    return volunteer;
   }
 
   async updateVolunteerProfile(id: string, updates: Partial<VolunteerProfile>): Promise<VolunteerProfile> {

@@ -87,6 +87,58 @@ export function localSqlitePlugin(): Plugin {
           }
         }
 
+        if (url === '/api/volunteers' && req.method === 'POST') {
+          try {
+            let body = '';
+            for await (const chunk of req) {
+              body += chunk;
+            }
+            const data = JSON.parse(body);
+            const db = getDb();
+
+            const insertStmt = db.prepare(`
+              INSERT OR REPLACE INTO volunteers (
+                id, profile_id, name, email, phone, role, avatar, skills, languages,
+                service_area, availability, verification_status, missions_completed,
+                hours_contributed, emergency_certified, is_first_aid_certified,
+                certifications, neighborhood_zone, contact_protected
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `);
+
+            const newId = data.id || `vol-${Date.now()}`;
+            insertStmt.run(
+              newId,
+              data.profileId || `usr-${Date.now()}`,
+              data.name || 'Community Volunteer',
+              data.email || 'volunteer@nexus.local',
+              data.phone || '+1 (555) 000-0000',
+              data.role || 'Mutual Aid Responder',
+              data.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
+              JSON.stringify(data.skills || ['General Aid']),
+              JSON.stringify(data.languages || ['English']),
+              data.serviceArea || 'Local District',
+              data.availability || 'available',
+              data.verificationStatus || 'verified',
+              Number(data.missionsCompleted || 0),
+              Number(data.hoursContributed || 0),
+              data.emergencyCertified ? 1 : 0,
+              data.isFirstAidCertified ? 1 : 0,
+              JSON.stringify(data.certifications || []),
+              data.neighborhoodZone || 'Community Core',
+              data.contactProtected ? 1 : 0
+            );
+
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ success: true, id: newId }));
+            return;
+          } catch (err: unknown) {
+            res.statusCode = 500;
+            const message = err instanceof Error ? err.message : String(err);
+            res.end(JSON.stringify({ error: message }));
+            return;
+          }
+        }
+
         if (url === '/api/missions' && req.method === 'GET') {
           try {
             const db = getDb();

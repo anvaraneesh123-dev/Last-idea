@@ -101,6 +101,8 @@ export interface VolunteerProfile {
   certifications?: string[];
   neighborhoodZone: string;
   contactProtected?: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 export type Volunteer = VolunteerProfile;

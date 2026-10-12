@@ -29,7 +29,17 @@ import { dataService } from '../services/dataService';
 import { isSupabaseConfigured } from '../services/supabaseClient';
 import { syncService } from '../services/syncService';
 import { offlineDb } from '../services/indexedDb';
+import { crossDeviceSync } from '../services/crossDeviceSync';
 import { useAuth } from './AuthContext';
+
+export interface DeviceGpsState {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  timestamp: number;
+  isAcquired: boolean;
+  error?: string;
+}
 
 export interface ToastMessage {
   id: string;
@@ -165,11 +175,16 @@ interface CommunityContextType {
   // Volunteers
   volunteers: VolunteerProfile[];
   isLoadingVolunteers: boolean;
+  registerVolunteer: (volunteer: Omit<VolunteerProfile, 'id' | 'createdAt' | 'status'> & { id?: string }) => Promise<VolunteerProfile>;
   updateVolunteerProfile: (id: string, updates: Partial<VolunteerProfile>) => Promise<VolunteerProfile>;
   verifyVolunteer: (id: string, status: 'verified' | 'rejected', verifierName?: string) => Promise<VolunteerProfile>;
   missions: VolunteerMission[];
   joinMission: (missionId: string, volunteerName?: string) => void;
   createMission: (mission: Omit<VolunteerMission, 'id' | 'volunteersEnrolled'>) => void;
+
+  // Real Device GPS
+  deviceGps: DeviceGpsState | null;
+  detectDeviceGps: () => Promise<DeviceGpsState | null>;
 
   // Alerts
   alerts: CommunityAlert[];
@@ -292,6 +307,15 @@ export const CommunityProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Dynamic live states loaded from dataService / IndexedDB
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [volunteers, setVolunteers] = useState<VolunteerProfile[]>([]);
+  const [deviceGps, setDeviceGps] = useState<DeviceGpsState | null>(() => {
+    try {
+      const saved = localStorage.getItem('nexus_device_gps');
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return null;
+  });
   const [requests, setRequests] = useState<CommunityRequest[]>([]);
   const [alerts, setAlerts] = useState<CommunityAlert[]>([]);
   const [activities, setActivities] = useState<ActivityUpdate[]>([]);
@@ -390,6 +414,98 @@ export const CommunityProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  // Detect Real Device GPS
+  const detectDeviceGps = useCallback((): Promise<DeviceGpsState | null> => {
+    return new Promise((resolve) => {
+      if (!('geolocation' in navigator)) {
+        addToast({
+          type: 'warning',
+          title: 'GPS Sensor Info',
+          message: 'Device geolocation is not supported in this environment.',
+        });
+        resolve(null);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const state: DeviceGpsState = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: pos.timestamp,
+            isAcquired: true,
+          };
+          setDeviceGps(state);
+          try {
+            localStorage.setItem('nexus_device_gps', JSON.stringify(state));
+          } catch {
+            // ignore
+          }
+          addToast({
+            type: 'success',
+            title: 'Device GPS Acquired',
+            message: `Current location: ${state.latitude.toFixed(4)}°, ${state.longitude.toFixed(4)}° (±${Math.round(state.accuracy)}m)`,
+          });
+          resolve(state);
+        },
+        (err) => {
+          console.warn('Geolocation sensor error:', err.message);
+          resolve(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 12000,
+          maximumAge: 0,
+        }
+      );
+    });
+  }, [addToast]);
+
+  // Subscribe to Cross-Device Volunteer Network & Auto-Acquire GPS
+  useEffect(() => {
+    // Attempt device GPS acquisition on startup
+    detectDeviceGps();
+
+    // Listen to real-time volunteer publications from other devices/tabs
+    const unsubscribeSync = crossDeviceSync.subscribe((newVol) => {
+      setVolunteers((prev) => {
+        const exists = prev.some(v => v.id === newVol.id || (v.name === newVol.name && v.phone === newVol.phone));
+        if (exists) {
+          return prev.map(v => v.id === newVol.id ? newVol : v);
+        }
+        return [newVol, ...prev];
+      });
+
+      addToast({
+        type: 'info',
+        title: '🌐 Remote Volunteer Synced',
+        message: `${newVol.name} just registered on another device (${newVol.serviceArea || 'Local Sector'}).`,
+      });
+    });
+
+    return () => {
+      unsubscribeSync();
+    };
+  }, [detectDeviceGps, addToast]);
+
+  // Register Volunteer
+  const registerVolunteer = useCallback(async (
+    volData: Omit<VolunteerProfile, 'id' | 'createdAt' | 'status'> & { id?: string }
+  ): Promise<VolunteerProfile> => {
+    const completeVol: VolunteerProfile = {
+      status: 'available',
+      verificationStatus: 'verified',
+      ...volData,
+      id: volData.id || `vol-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      missionsCompleted: volData.missionsCompleted ?? 1,
+      hoursContributed: volData.hoursContributed ?? 8,
+    };
+    const registered = await dataService.registerVolunteer(completeVol);
+    setVolunteers(prev => [registered, ...prev.filter(v => v.id !== registered.id)]);
+    return registered;
   }, []);
 
   // Fetch initial records from DataService / IndexedDB
@@ -1235,11 +1351,14 @@ export const CommunityProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         returnResource,
         volunteers,
         isLoadingVolunteers,
+        registerVolunteer,
         updateVolunteerProfile,
         verifyVolunteer,
         missions,
         joinMission,
         createMission,
+        deviceGps,
+        detectDeviceGps,
         alerts,
         addAlert,
         updateAlert,

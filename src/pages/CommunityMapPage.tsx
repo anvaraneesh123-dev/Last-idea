@@ -62,7 +62,10 @@ export const CommunityMapPage: React.FC = () => {
     hazardReports,
     verifyHazardReport,
     clearHazardReport,
-    setIsReportHazardModalOpen
+    setIsReportHazardModalOpen,
+    volunteers,
+    deviceGps,
+    detectDeviceGps
   } = useCommunity();
 
   const { currentUser, isAdmin, isVolunteer } = useAuth();
@@ -88,6 +91,7 @@ export const CommunityMapPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [selectedHazardId, setSelectedHazardId] = useState<string | null>(null);
+  const [selectedVolunteerId, setSelectedVolunteerId] = useState<string | null>(null);
 
   // Map Click Registration Mode
   const [isPinningMode, setIsPinningMode] = useState(false);
@@ -248,28 +252,64 @@ export const CommunityMapPage: React.FC = () => {
     }
   }, [searchParams]);
 
+  // Selected Volunteer
+  const selectedVolunteer = useMemo(() => {
+    if (selectedVolunteerId) {
+      return volunteers.find(v => v.id === selectedVolunteerId) || null;
+    }
+    return null;
+  }, [volunteers, selectedVolunteerId]);
+
+  // Real Haversine Distance Calculation from User's Physical Device GPS
+  const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Earth radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  const getFormattedDistance = (lat?: number, lng?: number, fallbackDistance?: string) => {
+    if (!deviceGps || !lat || !lng) return fallbackDistance || 'Local Zone';
+    const km = calculateDistanceKm(deviceGps.latitude, deviceGps.longitude, lat, lng);
+    if (km < 1) {
+      return `${Math.round(km * 1000)}m away (from Device GPS)`;
+    }
+    return `${km.toFixed(1)} km away (from Device GPS)`;
+  };
+
   // Default selection if nothing selected
   useEffect(() => {
-    if (!selectedResource && !selectedHazard) {
+    if (!selectedResource && !selectedHazard && !selectedVolunteer) {
       if (filteredResources.length > 0) {
         setSelectedResourceId(filteredResources[0].id);
       } else if (hazardReports.length > 0) {
         setSelectedHazardId(hazardReports[0].id);
       }
     }
-  }, [filteredResources, hazardReports, selectedResource, selectedHazard]);
+  }, [filteredResources, hazardReports, selectedResource, selectedHazard, selectedVolunteer]);
+
+  // When device GPS is acquired, smoothly pan/fly to user's real physical coordinates
+  useEffect(() => {
+    if (deviceGps && deviceGps.isAcquired && mapInstanceRef.current && !searchParams.get('assetId') && !searchParams.get('lat')) {
+      mapInstanceRef.current.flyTo([deviceGps.latitude, deviceGps.longitude], 15, { duration: 1.2 });
+    }
+  }, [deviceGps?.isAcquired]);
 
   // 1. Initialize Leaflet Map Instance
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-    // Default center: Cascadia Waterfront / Sector 4 coordinates
-    const initialLat = 45.5152;
-    const initialLng = -122.6784;
+    // Use device GPS if already detected, otherwise default Cascadia coordinates
+    const initialLat = deviceGps?.latitude || 45.5152;
+    const initialLng = deviceGps?.longitude || -122.6784;
 
     const map = L.map(mapContainerRef.current, {
       center: [initialLat, initialLng],
-      zoom: 14,
+      zoom: deviceGps ? 15 : 14,
       zoomControl: false,
     });
 
@@ -468,6 +508,7 @@ export const CommunityMapPage: React.FC = () => {
         hazardMarker.on('click', () => {
           setSelectedHazardId(h.id);
           setSelectedResourceId(null);
+          setSelectedVolunteerId(null);
           mapInstanceRef.current?.flyTo([lat, lng], 16, { duration: 0.8 });
         });
 
@@ -480,7 +521,142 @@ export const CommunityMapPage: React.FC = () => {
       });
     }
 
-  }, [filteredResources, hazardReports, selectedResource, selectedHazard, isEmergencyMode, selectedCategories.hazards]);
+    // C. Render User Physical Device GPS Marker & Sensor Accuracy Radius
+    if (deviceGps && deviceGps.isAcquired) {
+      const accuracyRadius = Math.max(15, deviceGps.accuracy || 25);
+      const gpsAccuracyCircle = L.circle([deviceGps.latitude, deviceGps.longitude], {
+        radius: accuracyRadius,
+        color: '#2563eb',
+        fillColor: '#3b82f6',
+        fillOpacity: 0.14,
+        weight: 2,
+        dashArray: '5, 5',
+      });
+      layerGroup.addLayer(gpsAccuracyCircle);
+
+      const userGpsIcon = L.divIcon({
+        className: 'custom-leaflet-user-gps',
+        html: `
+          <div style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <div style="position: absolute; inset: 0; border-radius: 9999px; background-color: #3b82f6; opacity: 0.55; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+            <div style="width: 24px; height: 24px; border-radius: 9999px; background: #2563eb; border: 3.5px solid white; box-shadow: 0 4px 18px rgba(37,99,235,0.8); display: flex; align-items: center; justify-content: center;">
+              <div style="width: 8px; height: 8px; border-radius: 9999px; background: white;"></div>
+            </div>
+            <div style="position: absolute; bottom: -20px; white-space: nowrap; background: #0f172a; color: #38bdf8; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 1px solid #1e293b;">
+              🎯 My Device GPS (±${Math.round(deviceGps.accuracy)}m)
+            </div>
+          </div>
+        `,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22],
+      });
+
+      const userMarker = L.marker([deviceGps.latitude, deviceGps.longitude], { icon: userGpsIcon });
+      userMarker.bindTooltip(
+        `<div style="font-weight: 800; font-size: 11px; color: #2563eb;">🎯 Your Live Device Location</div>
+         <div style="font-size: 10px; color: #64748b;">GPS: ${deviceGps.latitude.toFixed(5)}°, ${deviceGps.longitude.toFixed(5)}°</div>
+         <div style="font-size: 9px; color: #059669; font-weight: 700;">Sensor Accuracy: ±${Math.round(deviceGps.accuracy)} meters</div>`,
+        { direction: 'top', offset: [0, -18], opacity: 0.98 }
+      );
+
+      userMarker.on('click', () => {
+        mapInstanceRef.current?.flyTo([deviceGps.latitude, deviceGps.longitude], 16, { duration: 0.8 });
+      });
+
+      layerGroup.addLayer(userMarker);
+    }
+
+    // D. Render Registered Volunteers on Map (Multi-Device Live Sync)
+    if (selectedCategories.volunteers) {
+      volunteers.forEach((v, index) => {
+        let vLat = v.latitude;
+        let vLng = v.longitude;
+
+        if (!vLat || !vLng) {
+          const baseLat = deviceGps?.latitude || 45.5152;
+          const baseLng = deviceGps?.longitude || -122.6784;
+          const angle = (index * 2 * Math.PI) / Math.max(1, volunteers.length);
+          vLat = baseLat + 0.0035 * Math.cos(angle);
+          vLng = baseLng + 0.0035 * Math.sin(angle);
+        }
+
+        const isSelected = selectedVolunteer?.id === v.id;
+        const isReady = v.availability === 'available';
+        const volColor = isReady ? '#10b981' : '#64748b';
+
+        const volIcon = L.divIcon({
+          className: 'custom-leaflet-volunteer-marker',
+          html: `
+            <div style="position: relative; width: 38px; height: 38px; cursor: pointer; transition: transform 0.2s;">
+              ${isSelected ? `
+                <div style="position: absolute; inset: -5px; border-radius: 9999px; background-color: ${volColor}; opacity: 0.45; animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+              ` : ''}
+              <div style="
+                width: 38px; 
+                height: 38px; 
+                border-radius: 14px; 
+                background: ${volColor}; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                color: white; 
+                box-shadow: 0 8px 18px rgba(16,185,129,0.4);
+                border: ${isSelected ? '3px solid white' : '2px solid rgba(255,255,255,0.8)'};
+                transform: ${isSelected ? 'scale(1.18)' : 'scale(1)'};
+              ">
+                <span style="font-size: 16px;">🙋</span>
+              </div>
+              <div style="
+                position: absolute; 
+                top: -6px; 
+                right: -6px; 
+                background: #0f172a; 
+                color: #34d399; 
+                font-size: 8px; 
+                font-weight: 800; 
+                border-radius: 9999px; 
+                padding: 1px 4px; 
+                border: 1px solid #10b981;
+              ">
+                LIVE
+              </div>
+            </div>
+          `,
+          iconSize: [38, 38],
+          iconAnchor: [19, 19],
+        });
+
+        const volMarker = L.marker([vLat, vLng], { icon: volIcon });
+        volMarker.on('click', () => {
+          setSelectedVolunteerId(v.id);
+          setSelectedResourceId(null);
+          setSelectedHazardId(null);
+          mapInstanceRef.current?.flyTo([vLat!, vLng!], 16, { duration: 0.8 });
+        });
+
+        volMarker.bindTooltip(
+          `<div style="font-weight: 800; font-size: 11px; color: #10b981;">🙋 Volunteer: ${v.name}</div>
+           <div style="font-size: 10px; color: #94a3b8;">${v.role} • ${v.serviceArea || 'Local Sector'}</div>
+           <div style="font-size: 9px; color: #38bdf8;">Skills: ${v.skills.slice(0, 2).join(', ')}</div>`,
+          { direction: 'top', offset: [0, -12], opacity: 0.95 }
+        );
+
+        layerGroup.addLayer(volMarker);
+      });
+    }
+
+  }, [
+    filteredResources, 
+    hazardReports, 
+    volunteers, 
+    deviceGps, 
+    selectedResource, 
+    selectedHazard, 
+    selectedVolunteer, 
+    isEmergencyMode, 
+    selectedCategories.hazards, 
+    selectedCategories.volunteers
+  ]);
 
   // Center on resource
   const handleFlyToResource = (res: ResourceItem) => {
@@ -500,11 +676,38 @@ export const CommunityMapPage: React.FC = () => {
     }
   };
 
+  // Center on volunteer
+  const handleFlyToVolunteer = (v: any) => {
+    setSelectedVolunteerId(v.id);
+    setSelectedResourceId(null);
+    setSelectedHazardId(null);
+    if (mapInstanceRef.current && v.latitude && v.longitude) {
+      mapInstanceRef.current.flyTo([v.latitude, v.longitude], 16, { duration: 1.0 });
+    }
+  };
+
   // Zoom controls
   const handleZoomIn = () => mapInstanceRef.current?.zoomIn();
   const handleZoomOut = () => mapInstanceRef.current?.zoomOut();
+
+  const handleRecenterDeviceGps = async () => {
+    let coords = deviceGps;
+    if (!coords || !coords.isAcquired) {
+      coords = await detectDeviceGps();
+    }
+    if (coords && coords.isAcquired && mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([coords.latitude, coords.longitude], 16, { duration: 1.2 });
+    } else if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([45.5152, -122.6784], 14, { duration: 1.0 });
+    }
+  };
+
   const handleResetView = () => {
-    mapInstanceRef.current?.flyTo([45.5152, -122.6784], 14, { duration: 1.0 });
+    if (deviceGps && deviceGps.isAcquired) {
+      mapInstanceRef.current?.flyTo([deviceGps.latitude, deviceGps.longitude], 15, { duration: 1.0 });
+    } else {
+      mapInstanceRef.current?.flyTo([45.5152, -122.6784], 14, { duration: 1.0 });
+    }
   };
 
   const toggleCategory = (cat: MapFilterCategory) => {
@@ -814,6 +1017,14 @@ export const CommunityMapPage: React.FC = () => {
             {/* Custom Floating Map Overlay Controls */}
             <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
               <button
+                onClick={handleRecenterDeviceGps}
+                className="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-xl border border-blue-400 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                title="Lock on and Center to My Physical Device GPS"
+              >
+                <Crosshair className="w-4 h-4 text-white animate-pulse" />
+                <span className="font-sans">🎯 My Device GPS</span>
+              </button>
+              <button
                 onClick={handleZoomIn}
                 className="w-9 h-9 rounded-xl bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer"
                 title="Zoom In"
@@ -837,11 +1048,21 @@ export const CommunityMapPage: React.FC = () => {
             </div>
 
             {/* Floating Marker Count Badge */}
-            <div className="absolute bottom-4 left-4 z-20 px-3 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-md text-white border border-white/20 text-[10px] font-mono font-bold flex items-center gap-2 shadow-lg">
+            <div className="absolute bottom-4 left-4 z-20 px-3 py-1.5 rounded-full bg-slate-950/85 backdrop-blur-md text-white border border-white/20 text-[10px] font-mono font-bold flex flex-wrap items-center gap-2 shadow-lg">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>{filteredResources.length} Resources</span>
               <span>•</span>
               <span className="text-amber-400">{hazardReports.length} Hazards</span>
+              <span>•</span>
+              <span className="text-emerald-300">{volunteers.length} Volunteers</span>
+              {deviceGps && deviceGps.isAcquired && (
+                <>
+                  <span>•</span>
+                  <span className="text-sky-300">
+                    🎯 GPS: {deviceGps.latitude.toFixed(3)}°, {deviceGps.longitude.toFixed(3)}° (±{Math.round(deviceGps.accuracy)}m)
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -1006,7 +1227,7 @@ export const CommunityMapPage: React.FC = () => {
                 </h3>
                 <div className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1">
                   <MapPin className="w-3 h-3 shrink-0" />
-                  <span>{selectedResource.distance}</span>
+                  <span>{getFormattedDistance(selectedResource.latitude, selectedResource.longitude, selectedResource.distance)}</span>
                   <span className="text-slate-400">•</span>
                   <span className="text-slate-500 dark:text-slate-400 truncate">{selectedResource.locationName}</span>
                 </div>
@@ -1099,6 +1320,83 @@ export const CommunityMapPage: React.FC = () => {
                 >
                   <Navigation className="w-3.5 h-3.5 text-blue-500" />
                   <span>Center Marker on Map</span>
+                </button>
+              </div>
+            </div>
+          ) : selectedVolunteer ? (
+            /* C. If a Live Volunteer is selected */
+            <div className="glass-card rounded-3xl p-5 border border-emerald-500/30 space-y-4 shadow-xl relative overflow-hidden bg-emerald-500/[0.03]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              {/* Status & Badge */}
+              <div className="flex items-start justify-between gap-2">
+                <span className="px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white shadow-sm flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  Live Registered Volunteer
+                </span>
+
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  {selectedVolunteer.availability === 'available' ? '● On Standby / Ready' : 'On Mission'}
+                </span>
+              </div>
+
+              {/* Title & Coordinates */}
+              <div className="space-y-1">
+                <h3 className="text-sm font-black text-slate-900 dark:text-white leading-snug">
+                  {selectedVolunteer.name}
+                </h3>
+                <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <MapPin className="w-3 h-3 shrink-0" />
+                  <span>
+                    {getFormattedDistance(
+                      selectedVolunteer.latitude, 
+                      selectedVolunteer.longitude, 
+                      selectedVolunteer.serviceArea || selectedVolunteer.neighborhoodZone
+                    )}
+                  </span>
+                </div>
+                {selectedVolunteer.latitude && selectedVolunteer.longitude && (
+                  <div className="text-[10px] font-mono text-slate-400">
+                    GPS: {selectedVolunteer.latitude.toFixed(4)}, {selectedVolunteer.longitude.toFixed(4)}
+                  </div>
+                )}
+              </div>
+
+              {/* Role & Skills */}
+              <div className="p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-500/20 text-xs space-y-2">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-emerald-800 dark:text-emerald-300">
+                  Role & Assigned Squad
+                </div>
+                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                  {selectedVolunteer.role}
+                </p>
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {selectedVolunteer.skills.map((s, i) => (
+                    <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contact Button */}
+              <div className="space-y-2 pt-1">
+                {selectedVolunteer.phone && (
+                  <a
+                    href={`tel:${selectedVolunteer.phone}`}
+                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span>Call Volunteer: {selectedVolunteer.phone}</span>
+                  </a>
+                )}
+
+                <button
+                  onClick={() => handleFlyToVolunteer(selectedVolunteer)}
+                  className="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Navigation className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Center Volunteer on Map</span>
                 </button>
               </div>
             </div>

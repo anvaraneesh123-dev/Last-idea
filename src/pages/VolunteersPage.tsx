@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { VolunteerCard } from '../components/volunteers/VolunteerCard';
 import { MissionCard } from '../components/volunteers/MissionCard';
 import { VolunteerEditModal } from '../components/volunteers/VolunteerEditModal';
+import { RegisterVolunteerModal } from '../components/volunteers/RegisterVolunteerModal';
 import { VolunteerProfile } from '../types';
 import { 
   Users2, 
@@ -30,6 +31,7 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
   const [selectedSkill, setSelectedSkill] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [editingVolunteer, setEditingVolunteer] = useState<VolunteerProfile | null>(null);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   const skillsList = [
     'all',
@@ -88,7 +90,15 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsRegisterModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer w-fit"
+          >
+            <UserCheck className="w-4 h-4" />
+            <span>🙋 Register as Volunteer</span>
+          </button>
+
           <button
             onClick={onOpenNewMission}
             className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer w-fit"
@@ -231,6 +241,12 @@ export const VolunteersPage: React.FC<VolunteersPageProps> = ({ onOpenNewMission
           volunteer={editingVolunteer}
         />
       )}
+
+      {/* Register Volunteer Modal with GPS Auto-Detection & Cross-Device Sync */}
+      <RegisterVolunteerModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+      />
 
     </div>
   );
